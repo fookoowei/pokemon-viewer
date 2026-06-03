@@ -1,0 +1,8 @@
+<div class="stat">
+  <span class="stat__label">{{ label }}</span>
+  <span class="stat__value">{{ value }}</span>
+  <div class="stat__track" role="progressbar" [attr.aria-valuenow]="value"
+       aria-valuemin="0" [attr.aria-valuemax]="max" [attr.aria-label]="label">
+    <div class="stat__fill" [style.width.%]="percent" [style.background-color]="barColor"></div>
+  </div>
+</div>

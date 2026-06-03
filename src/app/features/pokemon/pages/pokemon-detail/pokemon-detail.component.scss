@@ -1,0 +1,181 @@
+.detail {
+  padding-top: 24px;
+  padding-bottom: 64px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { transform: translateX(-2px); box-shadow: var(--shadow-md); }
+}
+
+.card {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  padding: 30px 32px 90px;
+  color: #fff;
+  overflow: hidden;
+
+  /* Decorative oversized Poké Ball watermark. */
+  &::after {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -50px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 30px solid rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 24px rgba(255, 255, 255, 0.08);
+  }
+
+  &__id {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+
+  &__name {
+    margin: 4px 0 12px;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+
+  &__types {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__art {
+    position: absolute;
+    right: 28px;
+    bottom: -34px;
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.30));
+    animation: float-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    z-index: 1;
+  }
+}
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+}
+
+/* Body */
+.body {
+  padding: 56px 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  .fact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 10px;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+
+    &__label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    &__value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.panel {
+  &__title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: 14px;
+  }
+}
+
+.abilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .ability {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    small {
+      margin-left: 6px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(239, 83, 80, 0.14);
+      color: var(--color-primary);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .hero {
+    padding-bottom: 78px;
+    text-align: center;
+
+    &__types { justify-content: center; }
+    &__art { position: static; margin: 14px auto 0; width: 160px; height: 160px; }
+    &::after { opacity: 0.5; }
+  }
+  .body { padding-top: 28px; }
+}

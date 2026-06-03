@@ -1,0 +1,20 @@
+<a class="card" [routerLink]="['/pokemon', pokemon.name]" [attr.aria-label]="pokemon.name">
+  <span class="card__id">{{ paddedId }}</span>
+
+  <div class="card__art" [style.background]="tint">
+    <img
+      class="card__img"
+      [src]="pokemon.image"
+      [alt]="pokemon.name"
+      loading="lazy"
+      width="120"
+      height="120"
+    />
+  </div>
+
+  <h3 class="card__name capitalize">{{ pokemon.name }}</h3>
+
+  <div class="card__types">
+    <app-type-badge *ngFor="let t of pokemon.types" [type]="t"></app-type-badge>
+  </div>
+</a>

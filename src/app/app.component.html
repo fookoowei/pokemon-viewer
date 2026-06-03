@@ -1,0 +1,13 @@
+<header class="app-bar">
+  <div class="app-bar__inner container">
+    <a class="brand" routerLink="/pokemon" aria-label="Pokédex home">
+      <span class="brand__ball" aria-hidden="true"></span>
+      <span class="brand__name">{{ title }}</span>
+    </a>
+    <span class="brand__powered">Powered by PokeAPI</span>
+  </div>
+</header>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>

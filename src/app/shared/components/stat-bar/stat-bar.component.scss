@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: 92px 40px 1fr;
+  align-items: center;
+  gap: 12px;
+
+  &__label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+  }
+
+  &__value {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  &__track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 999px;
+    /* Bars grow in on render for a subtle, satisfying reveal. */
+    animation: stat-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes stat-grow {
+  from { width: 0 !important; }
+}
+
+@media (max-width: 480px) {
+  .stat {
+    grid-template-columns: 76px 34px 1fr;
+    gap: 8px;
+  }
+}

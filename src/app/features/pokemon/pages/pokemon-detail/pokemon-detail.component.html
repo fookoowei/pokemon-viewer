@@ -1,0 +1,68 @@
+<section class="detail container">
+  <a routerLink="/pokemon" class="back">‹ Back to Pokédex</a>
+
+  <!-- Loading -->
+  <app-loading-spinner *ngIf="loading" message="Loading Pokémon…"></app-loading-spinner>
+
+  <!-- Error -->
+  <app-error-message
+    *ngIf="error && !loading"
+    [message]="error"
+    (retry)="retry()"
+  ></app-error-message>
+
+  <!-- Content -->
+  <article class="card" *ngIf="pokemon && !loading && !error">
+    <!-- Hero -->
+    <div class="hero" [style.background]="heroBackground">
+      <span class="hero__id">{{ paddedId }}</span>
+      <h1 class="hero__name capitalize">{{ pokemon.name }}</h1>
+      <div class="hero__types">
+        <app-type-badge *ngFor="let t of pokemon.types" [type]="t.type.name"></app-type-badge>
+      </div>
+      <img class="hero__art" [src]="artwork" [alt]="pokemon.name" />
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <!-- Quick facts -->
+      <div class="facts">
+        <div class="fact">
+          <span class="fact__label">Height</span>
+          <span class="fact__value">{{ heightMeters }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact__label">Weight</span>
+          <span class="fact__value">{{ weightKg }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact__label">Base XP</span>
+          <span class="fact__value">{{ pokemon.base_experience }}</span>
+        </div>
+      </div>
+
+      <!-- Abilities -->
+      <div class="panel">
+        <h2 class="panel__title">Abilities</h2>
+        <div class="abilities">
+          <span class="ability capitalize" *ngFor="let a of pokemon.abilities">
+            {{ a.ability.name.replace('-', ' ') }}
+            <small *ngIf="a.is_hidden">hidden</small>
+          </span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="panel">
+        <h2 class="panel__title">Base stats</h2>
+        <div class="stats">
+          <app-stat-bar
+            *ngFor="let s of pokemon.stats"
+            [label]="statLabel(s.stat.name)"
+            [value]="s.base_stat"
+          ></app-stat-bar>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>

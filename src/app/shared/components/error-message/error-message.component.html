@@ -1,0 +1,7 @@
+<div class="error" role="alert">
+  <div class="error__icon" aria-hidden="true">!</div>
+  <p class="error__text">{{ message }}</p>
+  <button *ngIf="showRetry" type="button" class="error__retry" (click)="retry.emit()">
+    Try again
+  </button>
+</div>

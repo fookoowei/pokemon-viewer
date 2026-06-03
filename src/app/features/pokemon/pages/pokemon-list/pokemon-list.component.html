@@ -1,0 +1,81 @@
+<section class="list container">
+  <!-- Intro / hero -->
+  <header class="list__header">
+    <h1 class="list__title">Pokédex</h1>
+    <p class="list__subtitle">
+      Browse and search every Pokémon. Tap a card to see its types, abilities and stats.
+    </p>
+
+    <div class="search">
+      <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor"
+          d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z" />
+      </svg>
+      <input
+        type="search"
+        class="search__input"
+        placeholder="Search by name, e.g. pikachu"
+        autocomplete="off"
+        [formControl]="searchControl"
+        aria-label="Search Pokémon by name"
+      />
+    </div>
+  </header>
+
+  <!-- Error state -->
+  <app-error-message
+    *ngIf="error && !loading"
+    [message]="error"
+    (retry)="retry()"
+  ></app-error-message>
+
+  <!-- Loading state -->
+  <app-loading-spinner
+    *ngIf="loading"
+    message="Catching Pokémon…"
+  ></app-loading-spinner>
+
+  <!-- Empty state -->
+  <p *ngIf="!loading && !error && items.length === 0" class="list__empty">
+    No Pokémon match “{{ search }}”. Try a different name.
+  </p>
+
+  <!-- Results -->
+  <ng-container *ngIf="!loading && !error && items.length > 0">
+    <p class="list__count">
+      {{ total | number }} Pokémon{{ search ? ' matching “' + search + '”' : '' }}
+    </p>
+
+    <div class="grid">
+      <app-pokemon-card
+        *ngFor="let p of items; trackBy: trackById"
+        [pokemon]="p"
+      ></app-pokemon-card>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="pager" *ngIf="totalPages > 1" aria-label="Pagination">
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="page <= 1"
+        (click)="goToPage(page - 1)"
+      >
+        ‹ Prev
+      </button>
+
+      <span class="pager__status">
+        Page <strong>{{ page }}</strong> of {{ totalPages }}
+      </span>
+
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="page >= totalPages"
+        (click)="goToPage(page + 1)"
+      >
+        Next ›
+      </button>
+    </nav>
+  </ng-container>
+</section>
