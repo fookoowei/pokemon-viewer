@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, Observable, of } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { concat, forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 
 import {
   NamedApiResource,
   PokemonDetail,
   PokemonIndexResponse,
+  PokemonListItem,
   PokemonPage,
+  refToListItem,
   toListItem,
 } from '../models/pokemon.model';
 
@@ -19,8 +21,10 @@ import {
  * Strategy for list + search:
  *   The PokeAPI has no search endpoint, so we fetch the full (lightweight)
  *   name index once, cache it with shareReplay, then filter/paginate it in
- *   memory. Only the ~24 Pokémon on the current page are hydrated with a
- *   detail request (run in parallel via forkJoin) to get image + types.
+ *   memory. Each page paints instantly from the index (id + artwork are
+ *   derived from the url, no request); type badges are then hydrated in the
+ *   background via per-Pokémon detail requests, which are cached so paging
+ *   back or opening a card never refetches.
  */
 @Injectable({ providedIn: 'root' })
 export class PokemonService {
@@ -28,6 +32,9 @@ export class PokemonService {
 
   /** Cached, shared stream of every Pokémon's { name, url }. */
   private nameIndex$?: Observable<NamedApiResource[]>;
+
+  /** Per-Pokémon detail cache so paging back and opening a card never refetch. */
+  private readonly detailCache = new Map<string, Observable<PokemonDetail>>();
 
   constructor(private readonly http: HttpClient) {}
 
@@ -46,9 +53,25 @@ export class PokemonService {
     return this.nameIndex$;
   }
 
-  /** Full detail for one Pokémon by id or (lowercase) name. */
+  /**
+   * Full detail for one Pokémon by id or (lowercase) name. Cached and shared:
+   * repeat requests for the same Pokémon (paging back, opening its card) reuse
+   * the first response. Failures are evicted so `retry()` can refetch.
+   */
   getPokemonDetail(idOrName: string | number): Observable<PokemonDetail> {
-    return this.http.get<PokemonDetail>(`${this.baseUrl}/pokemon/${idOrName}`);
+    const key = String(idOrName).toLowerCase();
+    let cached = this.detailCache.get(key);
+    if (!cached) {
+      cached = this.http.get<PokemonDetail>(`${this.baseUrl}/pokemon/${idOrName}`).pipe(
+        catchError((err) => {
+          this.detailCache.delete(key); // don't cache failures
+          return throwError(() => err);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.detailCache.set(key, cached);
+    }
+    return cached;
   }
 
   /**
@@ -73,10 +96,23 @@ export class PokemonService {
           return of<PokemonPage>({ items: [], total });
         }
 
-        // Hydrate just this page's Pokémon, all requests in parallel.
-        return forkJoin(slice.map((ref) => this.getPokemonDetail(ref.name))).pipe(
-          map((details) => ({ items: details.map(toListItem), total })),
-        );
+        // 1) Instant page straight from the cached index — id + image need no
+        //    request, so the grid paints immediately without waiting on detail.
+        const base: PokemonListItem[] = slice.map(refToListItem);
+
+        // 2) Hydrate type badges in the background, all in parallel. A single
+        //    failed Pokémon falls back to its base card instead of breaking
+        //    the whole page (forkJoin would otherwise error out).
+        const hydrated$ = forkJoin(
+          slice.map((ref, i) =>
+            this.getPokemonDetail(ref.name).pipe(
+              map(toListItem),
+              catchError(() => of(base[i])),
+            ),
+          ),
+        ).pipe(map((items) => ({ items, total })));
+
+        return concat(of<PokemonPage>({ items: base, total }), hydrated$);
       }),
     );
   }

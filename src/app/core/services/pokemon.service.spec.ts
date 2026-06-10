@@ -105,6 +105,66 @@ describe('PokemonService', () => {
     expect(page?.items[0].image).toBe('art-pikachu.png');
   });
 
+  it('getPokemonDetail() caches the result — repeat calls reuse one request', () => {
+    const detail = makeDetail(1, 'bulbasaur');
+
+    service.getPokemonDetail('bulbasaur').subscribe();
+    service.getPokemonDetail('bulbasaur').subscribe();
+
+    // Cached: only ONE network call despite two subscriptions.
+    const reqs = httpMock.match(`${base}/pokemon/bulbasaur`);
+    expect(reqs.length).toBe(1);
+    reqs[0].flush(detail);
+  });
+
+  it('getPokemonPage() emits an instant index-derived page, then hydrates types', () => {
+    const index = {
+      count: 1,
+      next: null,
+      previous: null,
+      results: [{ name: 'pikachu', url: `${base}/pokemon/25/` }],
+    };
+
+    const emissions: Array<{ items: any[]; total: number }> = [];
+    service.getPokemonPage('', 1, 24).subscribe((p) => emissions.push(p));
+
+    httpMock.expectOne((r) => r.url === `${base}/pokemon`).flush(index);
+
+    // First emission is immediate: id + image from the index, no detail yet.
+    expect(emissions.length).toBe(1);
+    expect(emissions[0].items[0].name).toBe('pikachu');
+    expect(emissions[0].items[0].image).toContain('official-artwork/25.png');
+    expect(emissions[0].items[0].types).toEqual([]);
+
+    // Background hydration then fills in the type badges.
+    httpMock.expectOne(`${base}/pokemon/pikachu`).flush(makeDetail(25, 'pikachu'));
+    expect(emissions.length).toBe(2);
+    expect(emissions[1].items[0].types).toEqual(['grass']);
+  });
+
+  it('getPokemonPage() survives a failed detail request, keeping the base card', () => {
+    const index = {
+      count: 1,
+      next: null,
+      previous: null,
+      results: [{ name: 'pikachu', url: `${base}/pokemon/25/` }],
+    };
+
+    let last: { items: any[]; total: number } | undefined;
+    service.getPokemonPage('', 1, 24).subscribe((p) => (last = p));
+
+    httpMock.expectOne((r) => r.url === `${base}/pokemon`).flush(index);
+    httpMock
+      .expectOne(`${base}/pokemon/pikachu`)
+      .flush('boom', { status: 500, statusText: 'Server Error' });
+
+    // Card still shown (name + derived image), just without types — no crash.
+    expect(last?.items.length).toBe(1);
+    expect(last?.items[0].name).toBe('pikachu');
+    expect(last?.items[0].image).toContain('official-artwork/25.png');
+    expect(last?.items[0].types).toEqual([]);
+  });
+
   it('getPokemonPage() returns an empty page when nothing matches', () => {
     const index = {
       count: 1,
