@@ -30,7 +30,9 @@ const EMPTY_PAGE: PokemonPage = { items: [], total: 0 };
   styleUrls: ['./pokemon-list.component.scss'],
 })
 export class PokemonListComponent implements OnInit, OnDestroy {
-  readonly pageSize = 24;
+  // 20 divides evenly into the desktop column counts (5 and 4), so the last
+  // row is always full — no awkward empty trailing cell on wide screens.
+  readonly pageSize = 20;
 
   readonly searchControl = new FormControl('', { nonNullable: true });
 
